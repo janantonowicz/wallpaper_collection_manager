@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Witaj, {{ username }}!</h2>
+    <p>To jest Twoja strona główna.</p>
+    <a href="{{ url_for('user.logout') }}" class="btn btn-danger">Wyloguj się</a>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Panel Administratora</h2>
+    <p>Witaj, {{ username }}!</p>
+    <a href="{{ url_for('admin.create_user') }}" class="btn btn-success">Utwórz nowego użytkownika</a>
+    <a href="{{ url_for('admin.admin_logout') }}" class="btn btn-danger">Wyloguj się</a>
+    <hr>
+    <h3>Lista użytkowników:</h3>
+    <ul class="list-group">
+        {% for user in users %}
+            <li class="list-group-item">
+                {{ user.username }}
+                {% if user.is_admin %}
+                    <span class="badge badge-info">Administrator</span>
+                {% endif %}
+                <a href="{{ url_for('admin.reset_password', user_id=user.id) }}" class="btn btn-sm btn-warning float-right">Resetuj hasło</a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

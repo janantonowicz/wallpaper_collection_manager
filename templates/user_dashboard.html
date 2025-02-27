@@ -1,8 +1,45 @@
 {% extends 'base.html' %}
+{% block title %}Pulpit Użytkownika{% endblock %}
 {% block content %}
 <div class="container mt-5">
-    <h2>Witaj, {{ username }}!</h2>
-    <p>To jest Twoja strona główna.</p>
-    <a href="{{ url_for('user.logout') }}" class="btn btn-danger">Wyloguj się</a>
+    <h2>Witaj, {{ current_user.username }}!</h2>
+    <p>To jest Twój pulpit.</p>
+
+    <a href="{{ url_for('user.upload_wallpaper') }}" class="btn btn-success">Dodaj tapetę</a>
+    <a href="{{ url_for('user.wallpapers') }}" class="btn btn-primary">Przeglądaj tapety</a>
+    <a href="{{ url_for('user.create_collection') }}" class="btn btn-info">Utwórz kolekcję</a>
+    
+    <!-- Kolekcje użytkownika -->
+    <h3>Twoje Kolekcje</h3>
+    <div class="row">
+        {% for collection in user_collections %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ collection.name }}</h5>
+                        <p class="card-text">Urządzenie: {{ collection.device.name }}</p>
+                        <a href="{{ url_for('user.view_collection', collection_id=collection.id) }}" class="btn btn-primary">Przejdź do kolekcji</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Inne kolekcje -->
+    <h3>Inne Kolekcje</h3>
+    <div class="row">
+        {% for collection in other_collections %}
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ collection.name }}</h5>
+                        <p class="card-text">Urządzenie: {{ collection.device.name }}</p>
+                        <p class="card-text">Autor: {{ collection.user.username }}</p>
+                        <a href="{{ url_for('user.view_collection', collection_id=collection.id) }}" class="btn btn-primary">Przejdź do kolekcji</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 </div>
 {% endblock %}

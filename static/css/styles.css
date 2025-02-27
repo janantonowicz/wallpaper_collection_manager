@@ -1,0 +1,44 @@
+.card-columns {
+    column-gap: 1rem;
+}
+
+
+@media (min-width: 1209px) {
+    .card-columns {
+        column-count: 5;
+    }
+}
+
+@media (min-width: 972px) and (max-width: 1208px) {
+    .card-columns {
+        column-count: 4;
+    }
+}
+
+@media (min-width: 735px) and (max-width: 971px) {
+    .card-columns {
+        column-count: 3;
+    }
+}
+
+@media (max-width: 734px) {
+    .card-columns {
+        column-count: 2;
+    }
+}
+
+.card {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 1rem;
+    break-inside: avoid;
+}
+
+.card img {
+    width: 100%;
+    height: auto;
+}
+
+.card-body {
+    text-align: left;
+}

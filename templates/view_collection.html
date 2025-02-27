@@ -1,0 +1,15 @@
+{% extends 'wallpaper_grid.html' %}
+{% block title %}Kolekcja: {{ collection.name }}{% endblock %}
+{% block heading %}
+<h2>Kolekcja: {{ collection.name }}</h2>
+<p>Autor: {{ collection.user.username }}</p>
+<p>Urządzenie: {{ collection.device.name }}</p>
+{% endblock %}
+
+
+
+<!--
+<h2>Kolekcja: {{ collection.name }}</h2>
+    <p>Autor: {{ collection.user.username }}</p>
+    <p>Urządzenie: {{ collection.device.name }}</p>
+-->

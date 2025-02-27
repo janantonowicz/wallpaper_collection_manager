@@ -1,51 +1,65 @@
 from flask import Flask
 from config import Config
 from extensions import db, login_manager
-from models import User
-from flask_login import login_user, current_user, logout_user
-from werkzeug.security import generate_password_hash, check_password_hash
+from flask_migrate import Migrate
+from werkzeug.security import generate_password_hash
+import sqlalchemy.exc  # Importing exceptions from SQLAlchemy
 
 def create_app():
-    app = Flask(__name__)  # inickalizujemy aplikację
-    app.config.from_object(Config) # ładujemy zawartośc klasy Config
+    app = Flask(__name__)
+    app.config.from_object(Config)
 
     # Initialize extensions
-    db.init_app(app) # inicjalizujemy db
-    login_manager.init_app(app) # inijcalizujemy login_manager
+    db.init_app(app)
+    login_manager.init_app(app)
+    migrate = Migrate(app, db)
 
-    # wchodzimy do kontekstu aplikacji aby móc pracować z bazą danych
+    # Import and register blueprints
+    from user_routes import user_bp
+    from admin_routes import admin_bp
+    app.register_blueprint(user_bp)
+    app.register_blueprint(admin_bp)
+
     with app.app_context():
-        db.create_all() # tworzymy wszystkie tabele w bazie danych
+        # Import models inside the app context to avoid circular imports
+        from models import User, Device
 
-        # Create default admin if not exists
-        if not User.query.filter_by(username='admin').first():
-            admin_user = User(
-                username='admin',
-                password=generate_password_hash('admin123'),
-                is_admin=True
-            )
-            db.session.add(admin_user)
+        db.create_all()  # Create all tables in the database
+
+        # Initialize devices if they don't exist
+        if not Device.query.first():
+            devices = [Device(name='mobile'), Device(name='desktop')]
+            db.session.bulk_save_objects(devices)
             db.session.commit()
+            print("Devices initialized.")
 
-    # User loader - funkcja która ładuje użytkownika na podstawie jego id
+        # Check if the 'user' table exists
+        inspector = db.inspect(db.engine)
+        if 'user' in inspector.get_table_names():
+            try:
+                # Create default admin user if not exists
+                if not User.query.filter_by(username='admin').first():
+                    admin_user = User(
+                        username='admin',
+                        password=generate_password_hash('admin123'),
+                        is_admin=True
+                    )
+                    db.session.add(admin_user)
+                    db.session.commit()
+                    print("Default admin user created.")
+            except sqlalchemy.exc.OperationalError:
+                # The table exists but the structure is incompatible
+                pass
+
+    # Define user_loader callback for Flask-Login
     @login_manager.user_loader
     def load_user(user_id):
+        from models import User  # Import inside the function to avoid circular imports
         return User.query.get(int(user_id))
-
-    """
-    Import blueprints odpowiedzialne za trasy aplikacji
-    admin_bp z tras admina
-    user_bp z tras usera
-    """
-    from admin_routes import admin_bp
-    from user_routes import user_bp
-
-    # Register blueprints - jeśli skrypt jest wywoływany bezpośrednio to uruchamiamy aplikacje 
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(user_bp)
 
     return app
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
+

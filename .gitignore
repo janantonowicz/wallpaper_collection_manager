@@ -2,3 +2,5 @@ instance/
 *.pyc
 __pycache__/
 venv/
+migrations/
+static/uploads/

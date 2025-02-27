@@ -170,3 +170,11 @@ def add_to_collection(wallpaper_id):
             flash('Tapeta została dodana do kolekcji!', 'success')
         return redirect(url_for('user.view_collection', collection_id=collection.id))
     return render_template('add_to_collection.html', wallpaper=wallpaper, collections=collections)
+
+# Obsługa żądania AJAX
+@user_bp.route('/load_wallpaper_modal', methods=['GET'])
+@login_required
+def load_wallpaper_modal():
+    wallpaper_id = request.args.get('wallpaper_id', type=int)
+    wallpaper = Wallpaper.query.get_or_404(wallpaper_id)
+    return render_template('wallpaper_modal_content.html', wallpaper=wallpaper)

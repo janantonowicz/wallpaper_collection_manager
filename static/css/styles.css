@@ -27,18 +27,68 @@
     }
 }
 
-.card {
-    display: inline-block;
-    width: 100%;
-    margin-bottom: 1rem;
-    break-inside: avoid;
+
+
+.card-body {
+    text-align: left;
 }
 
-.card img {
+/* Remove border and shadow from cards */
+.card {
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+}
+
+/* Rounded corners for images */
+.card-img-top {
+    border-radius: 10px;
+}
+
+/* Truncate text to one line */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust font sizes */
+.card-title {
+    font-size: 0.9rem;
+}
+
+.card-text {
+    font-size: 0.8rem;
+}
+
+/* Remove margin between cards */
+.card-columns .card {
+    margin-bottom: 0.5rem;
+}
+
+h3 {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    max-width: 100%; /* Opcjonalnie, jeśli chcesz ograniczyć szerokość */
+}
+
+.collection-collage {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.collection-collage .collage-item {
+    width: 50%;
+}
+
+.collection-collage .collage-item img {
     width: 100%;
     height: auto;
 }
 
-.card-body {
-    text-align: left;
+/* Opcjonalnie - odstępy między obrazkami */
+.collection-collage .collage-item {
+    box-sizing: border-box;
+    padding: 1px;
 }

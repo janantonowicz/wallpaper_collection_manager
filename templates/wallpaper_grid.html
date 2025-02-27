@@ -5,18 +5,50 @@
     {% block heading %}{% endblock %}
     <div class="card-columns">
         {% for wallpaper in wallpapers %}
-            <div class="card">
-                <img src="{{ url_for('static', filename=wallpaper.path[7:]) }}" class="card-img-top" alt="{{ wallpaper.name }}">
-                <div class="card-body">
-                    <h5 class="card-title">{{ wallpaper.name }}</h5>
-                    <p class="card-text">Dodane przez: {{ wallpaper.owner.username }}</p>
-                    <div class="container-fluid">
-                        <a href="{{ url_for('user.download_wallpaper', wallpaper_id=wallpaper.id) }}" class="btn btn-primary btn-sm">Pobierz</a>
-                        <a href="{{ url_for('user.add_to_collection', wallpaper_id=wallpaper.id) }}" class="btn btn-secondary btn-sm">Dodaj do kolekcji</a>
-                    </div>
+        <div class="card" data-toggle="modal" data-wallpaper-id="{{ wallpaper.id }}">
+            <img src="{{ url_for('static', filename=wallpaper.path[7:]) }}" loading="lazy" class="card-img-top rounded" alt="{{ wallpaper.name }}">
+            <div class="card-body p-2">
+                <p class="card-title font-weight-bold mb-1 text-truncate">{{ wallpaper.name }}</p>
+                <p class="card-text small text-muted text-truncate">
+                    {% for tag in wallpaper.tags %}
+                        #{{ tag.name }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Universal Modal -->
+        <div class="modal fade" id="wallpaperModal" tabindex="-1" role="dialog" aria-labelledby="wallpaperModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <!-- Zawartość zostanie załadowana dynamicznie -->
+                <div class="modal-body p-0" id="modalContent">
+                <!-- Dynamic content goes here -->
                 </div>
             </div>
-        {% endfor %}
+            </div>
+        </div>
     </div>
-</div>
+</div>    
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('.card').on('click', function() {
+            var wallpaperId = $(this).data('wallpaper-id');
+            $('#modalContent').html(''); // Wyczyść poprzednią zawartość
+            $.ajax({
+                url: '{{ url_for("user.load_wallpaper_modal") }}',
+                method: 'GET',
+                data: { wallpaper_id: wallpaperId },
+                success: function(response) {
+                    $('#modalContent').html(response);
+                    $('#wallpaperModal').modal('show');
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

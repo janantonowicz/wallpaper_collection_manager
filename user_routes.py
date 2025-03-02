@@ -459,18 +459,55 @@ def delete_wallpaper(wallpaper_id):
 
     return redirect(url_for('user.dashboard'))
 
-@user_bp.route('/remove_wallpaper_from_collection/<int:collection_id>/<int:wallpaper_id>', methods=['POST'])
-@login_required
-def remove_wallpaper_from_collection(collection_id, wallpaper_id):
-    collection = Collection.query.filter_by(id=collection_id, user_id=current_user.id).first_or_404()
-    wallpaper = Wallpaper.query.get_or_404(wallpaper_id)
 
-    if wallpaper in collection.wallpapers:
-        collection.wallpapers.remove(wallpaper)
+
+@user_bp.route('/select_collection_to_remove/<int:wallpaper_id>', methods=['GET', 'POST'])
+@login_required
+def select_collection_to_remove(wallpaper_id):
+    wallpaper = Wallpaper.query.get_or_404(wallpaper_id)
+    
+    # Pobierz kolekcje użytkownika zawierające tę tapetę
+    collections = [collection for collection in current_user.collections if wallpaper in collection.wallpapers]
+    
+    if not collections:
+        flash("Ta tapeta nie znajduje się w żadnej z Twoich kolekcji.", 'info')
+        return redirect(url_for('user.dashboard'))  # Lub inna odpowiednia strona
+    
+    if request.method == 'POST':
+        collection_id = request.form.get('collection_id', type=int)
+        collection = Collection.query.filter_by(id=collection_id, user_id=current_user.id).first_or_404()
+        
+        if wallpaper in collection.wallpapers:
+            collection.wallpapers.remove(wallpaper)
+            db.session.commit()
+            flash(f"Tapeta została usunięta z kolekcji '{collection.name}'.", 'success')
+        else:
+            flash("Ta tapeta nie znajduje się w wybranej kolekcji.", 'warning')
+        
+        return redirect(url_for('user.dashboard'))  # Możesz przekierować na inną stronę
+    
+    return render_template('select_collection_to_remove.html', wallpaper=wallpaper, collections=collections)
+
+
+
+@user_bp.route('/delete_collection/<int:collection_id>', methods=['POST'])
+@login_required
+def delete_collection(collection_id):
+    collection = Collection.query.get_or_404(collection_id)
+
+    # Sprawdź, czy aktualny użytkownik jest właścicielem kolekcji
+    if collection.user_id != current_user.id:
+        flash("Nie masz uprawnień do usunięcia tej kolekcji.", 'danger')
+        return redirect(url_for('user.dashboard'))
+
+    try:
+        # Usuwamy relacje między kolekcją a tapetami
+        collection.wallpapers.clear()
+        db.session.delete(collection)
         db.session.commit()
-        flash('Tapeta została usunięta z kolekcji.', 'success')
-    else:
-        flash('Ta tapeta nie znajduje się w wybranej kolekcji.', 'warning')
+        flash(f"Kolekcja została usunięta.", 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Wystąpił błąd podczas usuwania kolekcji: {e}", 'danger')
 
     return redirect(url_for('user.dashboard'))
-

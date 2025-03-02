@@ -38,15 +38,11 @@
                 <button type="submit" onclick="return confirm('Czy na pewno chcesz usunąć tę tapetę?');" class="btn btn-danger mb-2">Usuń</button>
             </form>
           {% endif %}
-
           
-          {% if collection and wallpaper in collection.wallpapers %}
-            <form action="{{ url_for('user.remove_wallpaper_from_collection', collection_id=collection.id, wallpaper_id=wallpaper.id) }}" method="post">
-                {{ csrf_token() }}
-                  <button type="submit" class="btn btn-danger">Usuń z kolekcji '{{ collection.name }}'</button>
-            </form>
-          {% endif %}
-
+          <a href="{{ url_for('user.select_collection_to_remove', wallpaper_id=wallpaper.id) }}">
+            <button type="submiit" class="btn btn-danger mb-2">Usuń z kolekcji</button>
+          </a>
+        
         </div>
       </div>
     </div>

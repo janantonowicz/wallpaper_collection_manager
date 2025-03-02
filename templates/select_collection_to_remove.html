@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Usuń z kolekcji{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Usuń {{ wallpaper.name}} z kolekcji</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label for="collection_id">Wybierz kolekcję:</label>
+            <select class="form-control" id="collection_id" name="collection_id">
+                {% for collection in collections %}
+                    <option value="{{ collection.id }}">{{ collection.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-danger">Usuń z kolekcji</button>
+        <a href="{{ url_for('user.dashboard') }}"><button type="button" class="btn btn-warning">Anuluj</button></a>
+    </form>
+</div>
+{% endblock %}

@@ -17,7 +17,6 @@ class User(UserMixin, db.Model):
     # relacje
     wallpapers = db.relationship('Wallpaper', backref='owner', lazy=True)
     collections = db.relationship('Collection', backref='user', lazy=True)
-    favorites = db.relationship('Wallpaper', secondary='favorites', backref='liked_by')
 
     def __repr__(self):
         return f"<User('{self.username}', admin={self.is_admin})>"
@@ -42,8 +41,6 @@ class Device(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
 
-    collections = db.relationship('Collection', backref='device', lazy=True)
-
     def __repr__(self):
         return f"<Device('{self.name}')>"
 
@@ -52,12 +49,16 @@ class Collection(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    device_id = db.Column(db.Integer, db.ForeignKey('device.id'), nullable=False)
 
-    wallpapers = db.relationship('Wallpaper', secondary='wallpaper_collection', backref='collections')
+    wallpapers = db.relationship(
+        'Wallpaper', 
+        secondary='wallpaper_collection', 
+        backref='collections',
+          lazy='dynamic'
+    )
 
     def __repr__(self):
-        return f"<Collection('{self.name}', user_id={self.user_id}, device_id={self.device_id})>"
+        return f"<Collection('{self.name}', user_id={self.user_id})>"
 
 class Wallpaper(db.Model):
     __tablename__ = 'wallpaper'
@@ -66,12 +67,14 @@ class Wallpaper(db.Model):
     resolution = db.Column(db.String(20), nullable=False)
     path = db.Column(db.String(200), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    device_id = db.Column(db.Integer, db.ForeignKey('device.id'), nullable=False)
 
     colors = db.relationship('Color', secondary='wallpaper_color', backref='wallpapers')
     tags = db.relationship('Tag', secondary='wallpaper_tag', backref='wallpapers')
+    device = db.relationship('Device', backref='wallpapers')
 
     def __repr__(self):
-        return f"<Wallpaper('{self.name}', resolution={self.resolution})>"
+        return f"<Wallpaper('{self.name}', resolution={self.resolution}, device_id={self.device_id})>"
 
 class Color(db.Model):
     __tablename__ = 'color'
@@ -103,9 +106,4 @@ wallpaper_color = db.Table('wallpaper_color',
 wallpaper_tag = db.Table('wallpaper_tag',
     db.Column('wallpaper_id', db.Integer, db.ForeignKey('wallpaper.id'), primary_key=True),
     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'), primary_key=True)
-)
-
-favorites = db.Table('favorites',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('wallpaper_id', db.Integer, db.ForeignKey('wallpaper.id'), primary_key=True)
 )

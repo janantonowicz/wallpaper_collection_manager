@@ -1,24 +1,105 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-5">
-    <h2>Dodaj nową tapetę</h2>
+    <h2>Add New Wallpaper</h2>
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
+
+        <!-- Name Field -->
         <div class="form-group">
             {{ form.name.label }} {{ form.name(class='form-control') }}
         </div>
+
+        <!-- File Upload Field -->
         <div class="form-group">
-            {{ form.file.label }} {{ form.file(class='form-control-file') }}
+            {{ form.file.label }} {{ form.file(class='form-control-file', id='file-input') }}
         </div>
+
+        <!-- Image Preview and Resolution -->
+        <div id="image-preview" style="display: none;">
+            <img id="preview-image" src="#" alt="Image Preview" class="img-thumbnail mb-3" style="max-width: 300px;">
+            <p>Resolution: <span id="image-resolution"></span></p>
+        </div>
+
+        <!-- Device Selection Field -->
+        <div class="form-group">
+            {{ form.device.label }} {{ form.device(class='form-control', id='device-select') }}
+        </div>
+
+        <!-- Colors Field -->
         <div class="form-group">
             {{ form.colors.label }} {{ form.colors(class='form-control') }}
-            <small class="form-text text-muted">Podaj kolory, oddzielone przecinkami.</small>
+            <small class="form-text text-muted">Enter colors, separated by commas.</small>
         </div>
+
+        <!-- Tags Field -->
         <div class="form-group">
             {{ form.tags.label }} {{ form.tags(class='form-control') }}
-            <small class="form-text text-muted">Podaj tagi, oddzielone przecinkami.</small>
+            <small class="form-text text-muted">Enter tags, separated by commas.</small>
         </div>
-        {{ form.submit(class='btn btn-primary') }}
+
+        <!-- Submit Button -->
+        <div class="form-group">
+            {{ form.submit(class='btn btn-primary') }}
+        </div>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('file-input').addEventListener('change', function(event) {
+        var fileInput = event.target;
+        var file = fileInput.files[0];
+        if (file) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                // Display the image preview
+                var previewImage = document.getElementById('preview-image');
+                previewImage.src = e.target.result;
+                document.getElementById('image-preview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            var img = new Image();
+            img.src = window.URL.createObjectURL(file);
+            img.onload = function() {
+                var width = img.naturalWidth;
+                var height = img.naturalHeight;
+                window.URL.revokeObjectURL(img.src);
+
+                // Display the resolution
+                document.getElementById('image-resolution').textContent = width + 'x' + height;
+
+                // Optionally set the device type
+                var deviceSelect = document.getElementById('device-select');
+                if (width > height) {
+                    // Landscape - Desktop
+                    setDeviceOption(deviceSelect, 'desktop');
+                } else if (height > width) {
+                    // Portrait - Mobile
+                    setDeviceOption(deviceSelect, 'mobile');
+                } else {
+                    // Square image - default to Desktop or your preference
+                    setDeviceOption(deviceSelect, 'desktop');
+                }
+            };
+            img.onerror = function() {
+                console.error('The file could not be read as an image.');
+                alert('Invalid image file. Please select a valid image.');
+                fileInput.value = '';  // Reset the file input
+            };
+        }
+    });
+
+    function setDeviceOption(selectElement, deviceName) {
+        var options = selectElement.options;
+        for (var i = 0; i < options.length; i++) {
+            if (options[i].text.toLowerCase() === deviceName.toLowerCase()) {
+                selectElement.selectedIndex = i;
+                break;
+            }
+        }
+    }
+</script>
 {% endblock %}

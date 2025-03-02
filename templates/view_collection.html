@@ -3,13 +3,9 @@
 {% block heading %}
 <h2>Kolekcja: {{ collection.name }}</h2>
 <p>Autor: {{ collection.user.username }}</p>
-<p>Urządzenie: {{ collection.device.name }}</p>
 {% endblock %}
 
+{% block search_and_filters %}
 
-
-<!--
-<h2>Kolekcja: {{ collection.name }}</h2>
-    <p>Autor: {{ collection.user.username }}</p>
-    <p>Urządzenie: {{ collection.device.name }}</p>
--->
+{{ super() }}
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Edit Wallpaper Metadata</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <!-- Fields similar to upload_wallpaper.html -->
+
+        <div class="form-group">
+            {{ form.name.label }} {{ form.name(class='form-control') }}
+        </div>
+
+        <div class="form-group">
+            {{ form.device.label }} {{ form.device(class='form-control') }}
+        </div>
+
+        <div class="form-group">
+            {{ form.colors.label }} {{ form.colors(class='form-control') }}
+            <small class="form-text text-muted">Enter colors, separated by commas.</small>
+        </div>
+
+        <div class="form-group">
+            {{ form.tags.label }} {{ form.tags(class='form-control') }}
+            <small class="form-text text-muted">Enter tags, separated by commas.</small>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Update Wallpaper</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

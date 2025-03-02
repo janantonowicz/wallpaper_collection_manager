@@ -15,6 +15,7 @@
         <!-- Details -->
         <h3 class="wallpaper-title">{{ wallpaper.name }}</h3>
         <p class="text-muted">Dodane przez: {{ wallpaper.owner.username }}</p>
+        <p class="text-muted">{{ wallpaper.device.name }}</p>
         <p><strong>Tagi:</strong>
           {% for tag in wallpaper.tags %}
             #{{ tag.name }}{% if not loop.last %}, {% endif %}
@@ -30,6 +31,22 @@
         <div class="mt-auto">
           <a href="{{ url_for('user.download_wallpaper', wallpaper_id=wallpaper.id) }}" class="btn btn-primary mb-2">Pobierz</a>
           <a href="{{ url_for('user.add_to_collection', wallpaper_id=wallpaper.id) }}" class="btn btn-secondary mb-2">Dodaj do kolekcji</a>
+
+          {% if current_user.id == wallpaper.user_id %}
+            <a href="{{ url_for('user.edit_wallpaper', wallpaper_id=wallpaper.id) }}" class="btn btn-warning mb-2">Edytuj</a>
+            <form action="{{ url_for('user.delete_wallpaper', wallpaper_id=wallpaper.id) }}" method="post" style="display:inline;">
+                <button type="submit" onclick="return confirm('Czy na pewno chcesz usunąć tę tapetę?');" class="btn btn-danger mb-2">Usuń</button>
+            </form>
+          {% endif %}
+
+          
+          {% if collection and wallpaper in collection.wallpapers %}
+            <form action="{{ url_for('user.remove_wallpaper_from_collection', collection_id=collection.id, wallpaper_id=wallpaper.id) }}" method="post">
+                {{ csrf_token() }}
+                  <button type="submit" class="btn btn-danger">Usuń z kolekcji '{{ collection.name }}'</button>
+            </form>
+          {% endif %}
+
         </div>
       </div>
     </div>

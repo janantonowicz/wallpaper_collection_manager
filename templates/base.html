@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+
+<!--
+    Base template
+    This template is the base template for all other templates.
+    It contains the navbar, flashed messages, and the main content block.
+-->
+
 <html lang="pl">
     <head>
         <meta charset="UTF-8">
@@ -12,7 +19,7 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     </head>
 <body>
-    <!-- Pasek nawigacyjny -->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light">
         <a class="navbar-brand" href="{{ url_for('user.dashboard') }}">Twoja Aplikacja</a>
         <div class="collapse navbar-collapse justify-content-end">
@@ -33,7 +40,7 @@
         </div>
     </nav>
 
-    <!-- Flaszowanie wiadomosci-->
+    <!-- Flashed messages -->
     {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
         <div class="container mt-3">
@@ -44,7 +51,7 @@
     {% endif %}
     {% endwith %}
     
-    <!-- Główna zawartość strony -->
+    <!-- Main content -->
     {% block content %}{% endblock %}
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

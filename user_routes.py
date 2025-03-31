@@ -13,13 +13,14 @@ from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
 """
-Tworzymy blueprint dla tras użytkownika.
+Creating user blueprint for user routes.
+Blueprint is a way to organize a group of related views and other code.
 """
 user_bp = Blueprint('user', __name__)
 
 
 @user_bp.route('/', methods=['GET', 'POST'])
-@user_bp.route('/login', methods=['GET', 'POST']) # Trasa logowania
+@user_bp.route('/login', methods=['GET', 'POST']) # Login route for users
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('user.dashboard'))
@@ -33,18 +34,18 @@ def login():
             flash('Błędny login lub hasło.', 'danger')
     return render_template('login.html', form=form)
 
-# Trasa pulpitu użytkownika (admin dashboard oraz user dashboard)
+# TUser main page route (admin dashboard and user dashboard) - displays user collections
 @user_bp.route('/dashboard')
 @login_required
 def dashboard():
     if current_user.is_admin:
         return redirect(url_for('admin.admin_dashboard'))
-    # Pobierz kolekcje użytkownika
-    user_collections = Collection.query.filter_by(user_id=current_user.id).all()
-    # Pobierz kolekcje innych użytkowników
+    # Get user collections
+    user_collections = get_user_collections(current_user.id)
+    # Get other users' collections
     other_collections = Collection.query.filter(Collection.user_id != current_user.id).all()
 
-    # Fetch up to three wallpapers for each collection
+    # Fetch up to three wallpapers for each collection (for preview collage)
     for collection in user_collections + other_collections:
         collection.preview_wallpapers = collection.wallpapers.limit(3).all()
 
@@ -52,17 +53,17 @@ def dashboard():
                            user_collections=user_collections, other_collections=other_collections)
 
 
-# Trasa wylogowania
+# logout route for users
 @user_bp.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('user.login'))
 
-# Funkcje dla tapet
+# Wallpapers methods
 
 
-# Import tapety
+# Import wallpaper from file provided by user
 @user_bp.route('/upload_wallpaper', methods=['GET', 'POST'])
 @login_required
 def upload_wallpaper():
@@ -224,17 +225,17 @@ def wallpapers():
 
 
 
-#pobieranie tapet
+# downloading wallpapers
 @user_bp.route('/download_wallpaper/<int:wallpaper_id>')
 @login_required
 def download_wallpaper(wallpaper_id):
-    wallpaper = Wallpaper.query.get_or_404(wallpaper_id)
+    wallpaper = get_wallpaper(wallpaper_id)
     directory = os.path.dirname(wallpaper.path)
     filename = os.path.basename(wallpaper.path)
     return send_from_directory(directory, filename, as_attachment=True)
 
 
-# Tworzenie kolekcji
+# Creating collections
 @user_bp.route('/create_collection', methods=['GET', 'POST'])
 @login_required
 def create_collection():
@@ -301,11 +302,11 @@ def wallpapers_by_device(device_id):
     wallpapers = Wallpaper.query.filter_by(device_id=device.id, wallpapers=wallpapers)
 
 
-# Dodanie tapety do kolekcji
+# Add wallpaper to collection
 @user_bp.route('/add_to_collection/<int:wallpaper_id>', methods=['GET', 'POST'])
 @login_required
 def add_to_collection(wallpaper_id):
-    wallpaper = Wallpaper.query.get_or_404(wallpaper_id)
+    wallpaper = get_wallpaper(wallpaper_id)
     collections = Collection.query.filter_by(user_id=current_user.id).all()
     if not collections:
         flash('Nie masz żadnych kolekcji. Utwórz najpierw kolekcję.', 'warning')
@@ -325,16 +326,16 @@ def add_to_collection(wallpaper_id):
         return redirect(url_for('user.view_collection', collection_id=collection.id))
     return render_template('add_to_collection.html', wallpaper=wallpaper, collections=collections)
 
-# Obsługa żądania AJAX
+# Load wallpaper modal (AJAX)
 @user_bp.route('/load_wallpaper_modal', methods=['GET'])
 @login_required
 def load_wallpaper_modal():
     wallpaper_id = request.args.get('wallpaper_id', type=int)
-    wallpaper = Wallpaper.query.get_or_404(wallpaper_id)
+    wallpaper = get_wallpaper(wallpaper_id)
     return render_template('wallpaper_modal_content.html', wallpaper=wallpaper)
 
 
-# Query suggesions
+# Query suggesions (on wallpaper view user can search for wallpapers, tags and colors)
 @user_bp.route('/suggestions')
 @login_required
 def suggestions():
@@ -360,32 +361,32 @@ def suggestions():
 
     return jsonify(suggestions)
 
-
+# Edit wallpaper
 @user_bp.route('/edit_wallpaper/<int:wallpaper_id>', methods=['GET', 'POST'])
 @login_required
 def edit_wallpaper(wallpaper_id):
-    # Pobierz tapetę z bazy danych
-    wallpaper = Wallpaper.query.get_or_404(wallpaper_id)
+    # Get the wallpaper from the database
+    wallpaper = get_wallpaper(wallpaper_id)
 
-    # Sprawdź, czy aktualny użytkownik jest właścicielem tapety
+    # Check if current user is the owner of the wallpaper
     if wallpaper.user_id != current_user.id:
         flash('Nie masz uprawnień do edycji tej tapety.', 'danger')
         return redirect(url_for('user.dashboard'))
 
-    # Stwórz formularz i wypełnij go aktualnymi danymi tapety
+    # Create form and fill it with current wallpaper details (since user edits existing wallpaper)
     form = UploadWallpaperForm(obj=wallpaper)
     form.device.choices = [(device.id, device.name) for device in Device.query.all()]
 
-    # Ustawienie początkowych wartości dla pól colors i tags
+    # Set the form fields with current wallpaper tags and colors
     form.colors.data = ', '.join([color.name for color in wallpaper.colors])
     form.tags.data = ', '.join([tag.name for tag in wallpaper.tags])
 
+    # Update wallpaper details
     if form.validate_on_submit():
-        # Aktualizuj dane tapety
         wallpaper.name = form.name.data
         wallpaper.device_id = form.device.data
 
-        # Aktualizuj kolory
+        # Colors update
         wallpaper.colors.clear()
         color_names = [name.strip() for name in form.colors.data.split(',') if name.strip()]
         for color_name in color_names:
@@ -395,7 +396,7 @@ def edit_wallpaper(wallpaper_id):
                 db.session.add(color)
             wallpaper.colors.append(color)
 
-        # Aktualizuj tagi
+        # Tags Update
         wallpaper.tags.clear()
         tag_names = [name.strip() for name in form.tags.data.split(',') if name.strip()]
         for tag_name in tag_names:
@@ -411,30 +412,31 @@ def edit_wallpaper(wallpaper_id):
 
     return render_template('edit_wallpaper.html', form=form, wallpaper=wallpaper)
 
-
+# Deleting wallpaper
 @user_bp.route('/delete_wallpaper/<int:wallpaper_id>', methods=['POST'])
 @login_required
 def delete_wallpaper(wallpaper_id):
-    # Pobierz tapetę z bazy danych wraz z relacjami do kolekcji
+    # Fetch the wallpaper from the database with user and collections
     wallpaper = Wallpaper.query.options(
         joinedload(Wallpaper.collections).joinedload(Collection.user)
     ).get_or_404(wallpaper_id)
 
-    # Sprawdź, czy aktualny użytkownik jest właścicielem tapety
+    # Check if the current user is the owner of the wallpaper
     if wallpaper.user_id != current_user.id:
         flash('Nie masz uprawnień do usunięcia tej tapety.', 'danger')
         return redirect(url_for('user.dashboard'))
 
-    # Znajdź kolekcje innych użytkowników, które zawierają tę tapetę
+    # Find collections of other users that contain this wallpaper
     other_users_collections = [
         collection for collection in wallpaper.collections
         if collection.user_id != current_user.id
     ]
 
     if other_users_collections:
-        # Tapeta jest w kolekcjach innych użytkowników
+        # If wallpaper is in collections of other users, we want only to remove the wallpaper from the current user's collections
+        # Other users may want to still use the wallpaper
 
-        # Usuwamy tapetę z kolekcji właściciela
+        # Removing wallpaper from all collections of the current user
         owner_collections = [
             collection for collection in wallpaper.collections
             if collection.user_id == current_user.id
@@ -445,14 +447,14 @@ def delete_wallpaper(wallpaper_id):
         db.session.commit()
         flash('Tapeta została usunięta z Twoich kolekcji, ale pozostaje dostępna dla innych użytkowników.', 'success')
     else:
-        # Tapeta nie jest w kolekcjach innych użytkowników
+        # If wallpaper is not in collections of other users, we can safely delete it from the system
 
-        # Usuń plik z systemu plików
+        # Remove wallpaper files from the filesystem
         filepath = os.path.join(current_app.root_path, wallpaper.path)
         if os.path.exists(filepath):
             os.remove(filepath)
 
-        # Usuń tapetę z bazy danych
+        # Remove wallpaper from the database
         db.session.delete(wallpaper)
         db.session.commit()
         flash('Tapeta została usunięta!', 'success')
@@ -460,18 +462,18 @@ def delete_wallpaper(wallpaper_id):
     return redirect(url_for('user.dashboard'))
 
 
-
+# Removing wallpaper from collection
 @user_bp.route('/select_collection_to_remove/<int:wallpaper_id>', methods=['GET', 'POST'])
 @login_required
 def select_collection_to_remove(wallpaper_id):
-    wallpaper = Wallpaper.query.get_or_404(wallpaper_id)
+    wallpaper = get_wallpaper(wallpaper_id)
     
-    # Pobierz kolekcje użytkownika zawierające tę tapetę
+    # Get user collections that contain the wallpaper
     collections = [collection for collection in current_user.collections if wallpaper in collection.wallpapers]
     
     if not collections:
         flash("Ta tapeta nie znajduje się w żadnej z Twoich kolekcji.", 'info')
-        return redirect(url_for('user.dashboard'))  # Lub inna odpowiednia strona
+        return redirect(url_for('user.dashboard'))  # Send user back to main page
     
     if request.method == 'POST':
         collection_id = request.form.get('collection_id', type=int)
@@ -484,24 +486,24 @@ def select_collection_to_remove(wallpaper_id):
         else:
             flash("Ta tapeta nie znajduje się w wybranej kolekcji.", 'warning')
         
-        return redirect(url_for('user.dashboard'))  # Możesz przekierować na inną stronę
+        return redirect(url_for('user.dashboard'))  # Send user back to main page
     
     return render_template('select_collection_to_remove.html', wallpaper=wallpaper, collections=collections)
 
 
-
+# Deleting collection
 @user_bp.route('/delete_collection/<int:collection_id>', methods=['POST'])
 @login_required
 def delete_collection(collection_id):
     collection = Collection.query.get_or_404(collection_id)
 
-    # Sprawdź, czy aktualny użytkownik jest właścicielem kolekcji
+    # Che` ck if the current user is the owner of the collection`
     if collection.user_id != current_user.id:
         flash("Nie masz uprawnień do usunięcia tej kolekcji.", 'danger')
         return redirect(url_for('user.dashboard'))
 
     try:
-        # Usuwamy relacje między kolekcją a tapetami
+        # Remove relationships between the collection and wallpapers
         collection.wallpapers.clear()
         db.session.delete(collection)
         db.session.commit()
@@ -511,3 +513,11 @@ def delete_collection(collection_id):
         flash(f"Wystąpił błąd podczas usuwania kolekcji: {e}", 'danger')
 
     return redirect(url_for('user.dashboard'))
+
+# Get user collections helper func
+def get_user_collections(user_id):
+    return Collection.query.filter_by(user_id=user_id).all()
+
+# Get wallpaper by ID helper func
+def get_wallpaper(wallpaper_id):
+    return Wallpaper.query.get_or_404(wallpaper_id)

@@ -4,10 +4,12 @@ from flask_login import UserMixin # dostarcza standardowe metody potrzebne dla F
 
 """
 Klasa User reprezentuje tabelę użytkowników w bazie danych.
+User class reorresents the users table in the database.
+it inherits from UserMixin class which provides standard methods needed for Flask-Login.
 """
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
-    id = db.Column(db.Integer, primary_key=True)  # Pole id jest unikalnym głównym kluczem tabeli
+    id = db.Column(db.Integer, primary_key=True)  # ID field is a unique primary key of the table
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(150), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
@@ -22,19 +24,27 @@ class User(UserMixin, db.Model):
         return f"<User('{self.username}', admin={self.is_admin})>"
     
     """
-    metoda __repr_(self) zwraca informacje o User
-    przykład:
+    
+    method __repr_(self) returns information about User
+    example:
     ```
     user = User(username='janek', is_admin=False)
     print(user)
-    Wyświetla: <User('janek', admin=False)>
+    Displays: <User('janek', admin=False)>
     ```
     """
 
 # Modele tapet
 """
-Device: mobile lub desktop
-kolekcje są konkretnego typu
+Device: mobile or desktop
+Collections are of a specific type, e.g. 'Nature', 'Abstract', 'Cars', etc.
+Wallpapers are images that are assigned to a specific device and can have multiple colors and tags.
+Colors are assigned to wallpapers.
+Tags are assigned to wallpapers.
+Wallpapers can be assigned to multiple collections.
+Collections can have multiple wallpapers.
+Wallpapers can have multiple colors and tags.
+Colors and tags can be assigned to multiple wallpapers.
 """
 class Device(db.Model):
     __tablename__ = 'device'
@@ -92,7 +102,7 @@ class Tag(db.Model):
     def __repr__(self):
         return f"<Tag('{self.name}')>"
 
-# Tabele pośredniczące
+# Tables for many-to-many relationships
 wallpaper_collection = db.Table('wallpaper_collection',
     db.Column('wallpaper_id', db.Integer, db.ForeignKey('wallpaper.id'), primary_key=True),
     db.Column('collection_id', db.Integer, db.ForeignKey('collection.id'), primary_key=True)

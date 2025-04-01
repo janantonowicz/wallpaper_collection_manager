@@ -1,25 +1,32 @@
 <!DOCTYPE html>
+
+<!--
+    Base template
+    This template is the base template for all other templates.
+    It contains the navbar, flashed messages, and the main content block.
+-->
+
 <html lang="pl">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Twoja Aplikacja{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
         <!-- Twoje style CSS -->
         <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     </head>
 <body>
-    <!-- Pasek nawigacyjny -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
         <a class="navbar-brand" href="{{ url_for('user.dashboard') }}">Twoja Aplikacja</a>
         <div class="collapse navbar-collapse justify-content-end">
             <ul class="navbar-nav">
                 {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('user.dashboard') }}">Pulpit</a>
-                    </li>
-                    <li class="nav-item">
-                        <span class="nav-link">Witaj, {{ current_user.username }}!</span>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link btn btn-outline-danger" href="{{ url_for('user.logout') }}">Wyloguj się</a>
@@ -33,7 +40,7 @@
         </div>
     </nav>
 
-    <!-- Flaszowanie wiadomosci-->
+    <!-- Flashed messages -->
     {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
         <div class="container mt-3">
@@ -44,12 +51,12 @@
     {% endif %}
     {% endwith %}
     
-    <!-- Główna zawartość strony -->
+    <!-- Main content -->
     {% block content %}{% endblock %}
     
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js" async></script>
 
 
     {% block scripts %}{% endblock %}

@@ -1,3 +1,10 @@
+<!--
+    Create new collection form
+    This template is used to create a new collection.
+    It displays a form with a single field for the collection name.
+    The user can enter the name and submit the form to create the collection.
+-->
+
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-5">
@@ -6,9 +13,6 @@
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.name.label }} {{ form.name(class='form-control') }}
-        </div>
-        <div class="form-group">
-            {{ form.device.label }} {{ form.device(class='form-control') }}
         </div>
         {{ form.submit(class='btn btn-primary') }}
     </form>

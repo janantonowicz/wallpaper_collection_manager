@@ -1,0 +1,41 @@
+<!--
+    This template is used to confirm the wallpaper upload.
+    It displays the uploaded image and allows the user to edit the name, device, colors, and tags.
+    The user can then confirm the upload by clicking the "Confirm Upload" button.
+-->
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Confirm Wallpaper Upload</h2>
+    <img src="{{ image_url }}" alt="Wallpaper Preview" class="img-thumbnail mb-3">
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <!-- Fields similar to upload_wallpaper.html -->
+        <!-- Allow user to edit name, device, colors, tags -->
+
+        <div class="form-group">
+            {{ form.name.label }} {{ form.name(class='form-control') }}
+        </div>
+
+        <div class="form-group">
+            {{ form.device.label }} {{ form.device(class='form-control') }}
+        </div>
+
+        <div class="form-group">
+            {{ form.colors.label }} {{ form.colors(class='form-control') }}
+            <small class="form-text text-muted">Enter colors, separated by commas.</small>
+        </div>
+
+        <div class="form-group">
+            {{ form.tags.label }} {{ form.tags(class='form-control') }}
+            <small class="form-text text-muted">Enter tags, separated by commas.</small>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Confirm Upload</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

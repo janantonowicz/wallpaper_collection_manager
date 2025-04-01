@@ -3,24 +3,49 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Witaj, {{ current_user.username }}!</h2>
-    <p>To jest Twój pulpit.</p>
 
-    <a href="{{ url_for('user.upload_wallpaper') }}" class="btn btn-success">Dodaj tapetę</a>
-    <a href="{{ url_for('user.wallpapers') }}" class="btn btn-primary">Przeglądaj tapety</a>
-    <a href="{{ url_for('user.create_collection') }}" class="btn btn-info">Utwórz kolekcję</a>
+    <div class="row mb-4">
+        <div class="col-md-4 nav-spacer">
+            <a href="{{ url_for('user.upload_wallpaper') }}" class="btn btn-custom btn-lg btn-block">
+                <i class="fas fa-plus"></i> Dodaj tapetę
+            </a>
+        </div>
+        <div class="col-md-4 nav-spacer">
+            <a href="{{ url_for('user.wallpapers') }}" class="btn btn-custom btn-lg btn-block">
+                <i class="fas fa-images"></i> Przeglądaj tapety
+            </a>
+        </div>
+        <div class="col-md-4 nav-spacer">
+            <a href="{{ url_for('user.create_collection') }}" class="btn btn-custom btn-lg btn-block">
+                <i class="fas fa-folder-plus"></i> Utwórz kolekcję
+            </a>
+        </div>
+    </div>
     
     <!-- Kolekcje użytkownika -->
     <h3>Twoje Kolekcje</h3>
     <div class="row">
         {% for collection in user_collections %}
             <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ collection.name }}</h5>
-                        <p class="card-text">Urządzenie: {{ collection.device.name }}</p>
-                        <a href="{{ url_for('user.view_collection', collection_id=collection.id) }}" class="btn btn-primary">Przejdź do kolekcji</a>
+                <a href="{{ url_for('user.view_collection', collection_id=collection.id) }}">
+                    <div class="collection-card mb-4">
+                        <!-- Collection Preview Images -->
+                        {% if collection.preview_wallpapers %}
+                            <div class="card-img-top collection-preview">
+                                {% for wallpaper in collection.preview_wallpapers %}
+                                    <img src="{{ url_for('static', filename=wallpaper.path[7:]) }}" class="preview-image" alt="{{ wallpaper.name }}">
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="card-img-top collection-no-image">
+                                <p class="text-muted text-center">Brak tapet w kolekcji</p>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h2 class="card-title">{{ collection.name }}</h2>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         {% endfor %}
     </div>
@@ -30,14 +55,25 @@
     <div class="row">
         {% for collection in other_collections %}
             <div class="col-md-4">
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ collection.name }}</h5>
-                        <p class="card-text">Urządzenie: {{ collection.device.name }}</p>
-                        <p class="card-text">Autor: {{ collection.user.username }}</p>
-                        <a href="{{ url_for('user.view_collection', collection_id=collection.id) }}" class="btn btn-primary">Przejdź do kolekcji</a>
+                <a href="{{ url_for('user.view_collection', collection_id=collection.id) }}">
+                    <div class="collection-card card mb-4">
+                        {% if collection.preview_wallpapers %}
+                            <div class="card-img-top collection-preview">
+                                {% for wallpaper in collection.preview_wallpapers %}
+                                    <img src="{{ url_for('static', filename=wallpaper.path[7:]) }}" class="preview-image" alt="{{ wallpaper.name }}">
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="card-img-top collection-no-image">
+                                <p class="text-muted text-center">Brak tapet w kolekcji</p>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ collection.name }}</h5>
+                            <p class="card-text">Autor: {{ collection.user.username }}</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         {% endfor %}
     </div>

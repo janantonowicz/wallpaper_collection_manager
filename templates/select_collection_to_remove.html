@@ -1,13 +1,8 @@
-<!--
-    This template is used to add a wallpaper to a collection.
-    It displays a form with a dropdown list of collections.
-    The user can select a collection and submit the form to add the wallpaper to the selected collection.
--->
-{% extends 'base.html' %}
-{% block title %}Dodaj do Kolekcji{% endblock %}
+{% extends "base.html" %}
+{% block title %}Usuń z kolekcji{% endblock %}
 {% block content %}
 <div class="container mt-5">
-    <h2>Dodaj "{{ wallpaper.name }}" do swojej kolekcji</h2>
+    <h2>Usuń {{ wallpaper.name}} z kolekcji</h2>
     <form method="POST">
         <div class="form-group">
             <label for="collection_id">Wybierz kolekcję:</label>
@@ -17,7 +12,8 @@
                 {% endfor %}
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Dodaj do kolekcji</button>
+        <button type="submit" class="btn btn-danger">Usuń z kolekcji</button>
+        <a href="{{ url_for('user.dashboard') }}"><button type="button" class="btn btn-warning">Anuluj</button></a>
     </form>
 </div>
 {% endblock %}

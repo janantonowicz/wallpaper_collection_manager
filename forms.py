@@ -1,17 +1,17 @@
 """
-Importujemy klasy do tworzenia formularzy z flask_wtf oraz wtforms
+Imoporting classes for creating forms from flask_wtf and wtforms
 """
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, FileField, SelectField, SelectMultipleField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, FileField, SelectField
 from wtforms.validators import DataRequired, Length, ValidationError
 from models import User
 
 """
-Formularz logowania z polami:
+Login form with fields:
 username
 password
-przycisk submit
+submit button
 """
 class LoginForm(FlaskForm):
     username = StringField('Login', validators=[DataRequired(), Length(min=2, max=150)])
@@ -19,9 +19,9 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Zaloguj się')
 
 """
-Formularz tworzenia nowego użytkownika:
-Metoda validate_username sprawdza czy nazwa nie jest już zajęta.
-Dostępny tylko dla administratora.
+Create new user form:
+validate_username method checks if the username is not already taken.
+Available only for the administrator.
 """
 class CreateUserForm(FlaskForm):
     username = StringField('Login', validators=[DataRequired(), Length(min=2, max=150)])
@@ -30,7 +30,8 @@ class CreateUserForm(FlaskForm):
     submit = SubmitField('Utwórz użytkownika')
 
     """
-    Metoda validate_username jest wywoływana automatycznie poprzed WTForms przy walidacji pola username
+    validate_username method is called automatically by WTForms when validating the username field
+    checks if the username is not already taken.
     """
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
@@ -38,23 +39,23 @@ class CreateUserForm(FlaskForm):
             raise ValidationError('Ten login jest już zajęty.')
 
 """
-Formulaż umożliwiający resetowanie hasła użytkownika.
-Dostępny tylko dla administratora.
+Reset user password form:
+Available only for the administrator.
 """
 class ResetPasswordForm(FlaskForm):
     password = PasswordField('Nowe hasło', validators=[DataRequired()])
     submit = SubmitField('Zresetuj hasło')
 
 
-# Formularze do obsługi dodawania tapet, kolekcji, tagów itp.
+# Forms for adding wallpapers, collections, tags, etc.
 class UploadWallpaperForm(FlaskForm):
     name = StringField('Nazwa tapety', validators=[DataRequired(), Length(max=100)])
-    file = FileField('Plik tapety', validators=[DataRequired(), FileAllowed(['jpg', 'png'], 'Tylko obrazy JPG i PNG!')])
+    file = FileField('Plik tapety', validators=[DataRequired(), FileAllowed(['jpg', 'png', 'jpeg'], 'Tylko obrazy JPG i PNG!')])
+    device = SelectField('Urządzenie', coerce=int, validators=[DataRequired()])
     colors = StringField('Kolory (oddzielone przecinkami)', validators=[DataRequired()])
     tags = StringField('Tagi (oddzielone przecinkami)', validators=[DataRequired()])
     submit = SubmitField('Prześlij')
 
 class CreateCollectionForm(FlaskForm):
     name = StringField('Nazwa kolekcji', validators=[DataRequired(), Length(max=100)])
-    device = SelectField('Urządzenie', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Utwórz kolekcję')

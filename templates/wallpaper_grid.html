@@ -3,20 +3,54 @@
 {% block content %}
 <div class="container-md mt-4">
     {% block heading %}{% endblock %}
-    <div class="card-columns">
-        {% for wallpaper in wallpapers %}
-        <div class="card" data-toggle="modal" data-wallpaper-id="{{ wallpaper.id }}">
-            <img src="{{ url_for('static', filename=wallpaper.path[7:]) }}" loading="lazy" class="card-img-top rounded" alt="{{ wallpaper.name }}">
-            <div class="card-body p-2">
-                <p class="card-title font-weight-bold mb-1 text-truncate">{{ wallpaper.name }}</p>
-                <p class="card-text small text-muted text-truncate">
-                    {% for tag in wallpaper.tags %}
-                        #{{ tag.name }}{% if not loop.last %}, {% endif %}
+    {% block search_and_filters %}
+    <!-- Search bar and filter form -->
+     <form method="GET" action="" class="mb-4">
+        <input type="hidden" name="page" value="1"> <!-- When form is submitted page nr resets-->
+        <div class="form-row">
+            <!-- Search bar -->
+            <div class="col-md-7 nav-spacer">     
+                <input type="text" name="search" class="form-control" placeholder="Szukaj po nazwie, tagu lub kolorze (oddziel oddzielne wyszukiwania przecinkami)" value="{{ request.args.get('search', '') }}">
+            </div>
+            <!-- Device Filter Dropdown -->
+            <div class="col-md-3 nav-spacer">
+                <select name="device" class="form-control">
+                    <option value="">Wszystkie urządzenia</option>
+                    {% for device in devices %}
+                    <option value="{{ device.id }}" {% if device.id == selected_device_id %}selected{% endif %}>{{ device.name }}</option>
                     {% endfor %}
-                </p>
+                </select>                
+            </div>
+            <!-- Search Button -->
+            <div class="col-md-2 nav-spacer">
+                <button type="submit" class="btn btn-primary btn-block">Szukaj</button>
             </div>
         </div>
-        {% endfor %}
+     </form>
+     {% endblock %}
+
+     {% if wallpapers %}
+        <div class="card-columns">
+            {% for wallpaper in wallpapers %}
+            <div class="card" data-toggle="modal" data-wallpaper-id="{{ wallpaper.id }}">
+                <img data-src="{{ url_for('static', filename=wallpaper.path[7:]) }}" class="card-img-top rounded lazyload" alt="{{ wallpaper.name }}">
+                <div class="card-body p-2">
+                    <p class="card-title font-weight-bold mb-1 text-truncate">{{ wallpaper.name }}</p>
+                    <p class="card-text small text-muted">{{ wallpaper.device.name }}</p>
+                    <p class="card-text small text-muted text-truncate">
+                        {% for tag in wallpaper.tags %}
+                            #{{ tag.name }}{% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+         <!-- Pagination Controls -->
+         <nav aria-label="Page navigation">
+            {{ pagination.links }}
+        </nav>
 
         <!-- Universal Modal -->
         <div class="modal fade" id="wallpaperModal" tabindex="-1" role="dialog" aria-labelledby="wallpaperModalLabel" aria-hidden="true">
@@ -29,11 +63,19 @@
             </div>
             </div>
         </div>
-    </div>
+    {% else %}
+        <p>Nie znaleziono żadnych Tapet pasujących do twoich kryteriów.</p>
+    {% endif %}
 </div>    
 {% endblock %}
 
 {% block scripts %}
+<!-- Include jQuery UI CSS -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+
+<!-- Include jQuery UI JS -->
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
 <script>
     $(document).ready(function() {
         $('.card').on('click', function() {
@@ -49,6 +91,39 @@
                 }
             });
         });
+
+        // Initialize autocomplete
+        $('input[name="search"]').autocomplete({
+                source: function(request, response) {
+                    $.ajax({
+                        url: "{{ url_for('user.suggestions') }}",
+                        dataType: "json",
+                        data: {
+                            term: request.term
+                        },
+                        success: function(data) {
+                            response(data);
+                        }
+                    });
+                },
+                minLength: 1,
+                select: function(event, ui) {
+                    var terms = this.value.split(',');
+                    // Remove the current input
+                    terms.pop();
+                    // Add the selected item
+                    terms.push(ui.item.value);
+                    // Add placeholder for next term
+                    terms.push('');
+                    this.value = terms.join(', ');
+                    return false;
+                },
+                focus: function() {
+                    // Prevent value from being inserted on focus
+                    return false;
+                },
+                delay: 0 // Adjust delay as needed
+            });
     });
 </script>
 {% endblock %}

@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# Panel sterowania, wyświetla liste wszystkich użytkowników
+# Admin control pannel - displays all users with options to create new user, reset password or remove user
 @admin_bp.route('/dashboard')
 @login_required
 def admin_dashboard():
@@ -17,7 +17,7 @@ def admin_dashboard():
     users = User.query.all()
     return render_template('admin_dashboard.html', users=users, username=current_user.username)
 
-# Tworzenie nowych użytkowników
+# Creating new users from admin control pannel
 @admin_bp.route('/create_user', methods=['GET', 'POST'])
 @login_required
 def create_user():
@@ -38,7 +38,7 @@ def create_user():
         return redirect(url_for('admin.admin_dashboard'))
     return render_template('create_user.html', form=form)
 
-# Reset hasła użytkowników
+# Resetting password for users from admin control pannel
 @admin_bp.route('/reset_password/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def reset_password(user_id):
@@ -54,6 +54,7 @@ def reset_password(user_id):
         return redirect(url_for('admin.admin_dashboard'))
     return render_template('reset_password.html', form=form, user=user)
 
+# Admin logout and showing login page
 @admin_bp.route('/logout')
 @login_required
 def admin_logout():
